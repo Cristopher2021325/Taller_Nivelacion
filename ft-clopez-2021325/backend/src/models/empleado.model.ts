@@ -5,6 +5,5 @@ export interface Empleado {
   puesto: string;
   telefono: string;
   id_sucursal: number;
-  // dato de solo lectura obtenido con join
   sucursal?: string;
 }
