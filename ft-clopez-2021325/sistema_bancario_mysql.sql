@@ -1,15 +1,9 @@
--- =========================================================
--- SISTEMA BANCARIO
--- Motor: MySQL 8.0.16 o superior (necesario para que funcionen los CHECK)
--- =========================================================
 
 drop database if exists sistema_bancario;
 create database sistema_bancario;
 use sistema_bancario;
 
--- ---------------------------------------------------------
--- tabla usuario (login y roles)
--- ---------------------------------------------------------
+
 create table usuario (
     id_usuario int auto_increment primary key,
     nombre varchar(100) not null,
@@ -19,9 +13,7 @@ create table usuario (
     constraint ck_usuario_rol check (rol in ('admin', 'usuario'))
 );
 
--- ---------------------------------------------------------
--- tabla cliente
--- ---------------------------------------------------------
+
 create table cliente (
     id_cliente int auto_increment primary key,
     nombre varchar(50) not null,
@@ -35,18 +27,13 @@ create table cliente (
     constraint ck_cliente_telefono check (telefono regexp '^[0-9]{8}$')
 );
 
--- ---------------------------------------------------------
--- tabla tipo_cuenta
--- ---------------------------------------------------------
+
 create table tipo_cuenta (
     id_tipo int auto_increment primary key,
     nombre varchar(50) not null unique,
     descripcion varchar(255) not null
 );
 
--- ---------------------------------------------------------
--- tabla sucursal
--- ---------------------------------------------------------
 create table sucursal (
     id_sucursal int auto_increment primary key,
     nombre varchar(100) not null unique,
@@ -55,9 +42,7 @@ create table sucursal (
     constraint ck_sucursal_telefono check (telefono regexp '^[0-9]{8}$')
 );
 
--- ---------------------------------------------------------
--- tabla empleado (cada empleado trabaja en una sucursal)
--- ---------------------------------------------------------
+
 create table empleado (
     id_empleado int auto_increment primary key,
     nombre varchar(50) not null,
@@ -70,11 +55,6 @@ create table empleado (
         references sucursal (id_sucursal)
 );
 
--- ---------------------------------------------------------
--- tabla cuenta
--- un cliente puede tener varias cuentas
--- cada cuenta tiene un tipo y una sucursal
--- ---------------------------------------------------------
 create table cuenta (
     id_cuenta int auto_increment primary key,
     numero_cuenta varchar(20) not null unique,
@@ -94,11 +74,7 @@ create table cuenta (
         references sucursal (id_sucursal)
 );
 
--- ---------------------------------------------------------
--- tabla movimiento (depositos, retiros y transferencias)
--- id_cuenta = cuenta principal (el origen si es transferencia)
--- id_cuenta_destino = solo se usa en transferencias
--- ---------------------------------------------------------
+
 create table movimiento (
     id_movimiento int auto_increment primary key,
     tipo varchar(15) not null,
@@ -122,9 +98,7 @@ create table movimiento (
         references usuario (id_usuario) on delete set null
 );
 
--- ---------------------------------------------------------
--- tabla transferencia (detalle de cada transferencia)
--- ---------------------------------------------------------
+
 create table transferencia (
     id_transferencia int auto_increment primary key,
     id_cuenta_origen int not null,
@@ -142,9 +116,7 @@ create table transferencia (
         references movimiento (id_movimiento) on delete cascade
 );
 
--- ---------------------------------------------------------
--- indices
--- ---------------------------------------------------------
+
 create index ix_mov_cuenta on movimiento (id_cuenta);
 create index ix_mov_destino on movimiento (id_cuenta_destino);
 create index ix_mov_fecha on movimiento (fecha);
@@ -153,9 +125,7 @@ create index ix_cuenta_tipo on cuenta (id_tipo);
 create index ix_cuenta_sucursal on cuenta (id_sucursal);
 create index ix_empleado_sucursal on empleado (id_sucursal);
 
--- ---------------------------------------------------------
--- vista: resumen de operaciones por tipo
--- ---------------------------------------------------------
+
 create or replace view vw_resumen_operaciones as
 select tipo,
        count(*) as cantidad,
@@ -166,9 +136,6 @@ select tipo,
 from movimiento
 group by tipo;
 
--- =========================================================
--- datos de prueba
--- =========================================================
 
 -- contrasenas: admin -> admin123 | usuario -> usuario123
 insert into usuario (nombre, username, password, rol) values
@@ -203,16 +170,3 @@ insert into cuenta (numero_cuenta, saldo, fecha_apertura, id_tipo, id_cliente, i
 ('1002-0002-01', 32500.50, '2023-11-20', 2, 2, 1),
 ('1003-0003-01', 50000.00, '2025-01-10', 3, 3, 3),
 ('1001-0004-01', 1200.00, '2025-06-28', 1, 4, 2);
-
--- =========================================================
--- consultas de verificacion
--- =========================================================
--- select * from cliente;
-
--- select c.numero_cuenta, c.saldo,
---        concat(cl.nombre, ' ', cl.apellido) as cliente,
---        t.nombre as tipo, s.nombre as sucursal
--- from cuenta c
--- inner join cliente cl on cl.id_cliente = c.id_cliente
--- inner join tipo_cuenta t on t.id_tipo = c.id_tipo
--- inner join sucursal s on s.id_sucursal = c.id_sucursal;
