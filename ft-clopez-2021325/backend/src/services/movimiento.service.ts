@@ -1,6 +1,5 @@
-import { pool } from '../config/db';
+import { consultar } from '../config/db';
 import { noEncontrado } from '../utils/http-error';
-
 
 const consultaBase = `
   select m.id_movimiento, m.tipo, m.monto, m.fecha, m.descripcion,
@@ -19,37 +18,43 @@ export interface FiltroMovimientos {
 }
 
 export const obtenerTodos = async (f: FiltroMovimientos = {}) => {
-  const { rows } = await pool.query(
-    `${consultaBase}
-     where ($1::text is null or m.tipo = $1)
-       and ($2::date is null or m.fecha >= $2::date)
-       and ($3::date is null or m.fecha < $3::date + 1)
-     order by m.fecha desc, m.id_movimiento desc`,
-    [f.tipo ?? null, f.desde ?? null, f.hasta ?? null]
-  );
-  return rows;
+  const condiciones: string[] = [];
+  const params: unknown[] = [];
+  if (f.tipo) {
+    condiciones.push('m.tipo = ?');
+    params.push(f.tipo);
+  }
+  if (f.desde) {
+    condiciones.push('m.fecha >= ?');
+    params.push(f.desde);
+  }
+  if (f.hasta) {
+    condiciones.push('m.fecha < date_add(?, interval 1 day)');
+    params.push(f.hasta);
+  }
+  const donde = condiciones.length ? `where ${condiciones.join(' and ')}` : '';
+  return consultar(`${consultaBase} ${donde} order by m.fecha desc, m.id_movimiento desc`, params);
 };
 
 // movimientos donde la cuenta participa como origen o destino
 export const obtenerPorCuenta = async (idCuenta: number) => {
-  const existe = await pool.query('select 1 from cuenta where id_cuenta = $1', [idCuenta]);
-  if (!existe.rowCount) throw noEncontrado('Cuenta');
-  const { rows } = await pool.query(
+  const existe = await consultar('select 1 from cuenta where id_cuenta = ?', [idCuenta]);
+  if (!existe.length) throw noEncontrado('Cuenta');
+  return consultar(
     `${consultaBase}
-     where m.id_cuenta = $1 or m.id_cuenta_destino = $1
+     where m.id_cuenta = ? or m.id_cuenta_destino = ?
      order by m.fecha desc, m.id_movimiento desc`,
-    [idCuenta]
+    [idCuenta, idCuenta]
   );
-  return rows;
 };
 
 export const resumen = async () => {
-  const porTipo = await pool.query('select * from vw_resumen_operaciones order by tipo');
-  const totales = await pool.query(
-    `select (select count(*) from cliente where estado = 'activo')::int as clientes_activos,
-            (select count(*) from cuenta where estado = 'activa')::int  as cuentas_activas,
-            (select coalesce(sum(saldo), 0) from cuenta)               as saldo_total,
-            (select count(*) from movimiento)::int                      as total_movimientos`
+  const porTipo = await consultar('select * from vw_resumen_operaciones order by tipo');
+  const totales = await consultar(
+    `select (select count(*) from cliente where estado = 'activo') as clientes_activos,
+            (select count(*) from cuenta where estado = 'activa')  as cuentas_activas,
+            (select coalesce(sum(saldo), 0) from cuenta)           as saldo_total,
+            (select count(*) from movimiento)                      as total_movimientos`
   );
-  return { totales: totales.rows[0], por_tipo: porTipo.rows };
+  return { totales: totales[0], por_tipo: porTipo };
 };
