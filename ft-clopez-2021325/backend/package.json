@@ -1,14 +1,30 @@
 {
+  "name": "sistema-bancario-api",
+  "version": "1.0.0",
+  "description": "api rest del sistema bancario con node, express, typescript, jwt y mysql",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "keywords": [],
+  "license": "ISC",
   "dependencies": {
-    "dotenv": "^18.0.10",
-    "express": "^4.19.2",
-    "express-validator": "^6.15.0",
-    "jsonwebtoken": "^9.0.3"
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "express-validator": "^7.3.2",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.11.3"
   },
   "devDependencies": {
-    "@types/dotenv": "^6.1.1",
-    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/pg": "^8.23.1"
+    "@types/node": "^22.20.5",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.3"
   }
 }
