@@ -1,117 +1,122 @@
-import { PoolClient } from 'pg';
-import { pool } from '../config/db';
+import { PoolConnection } from 'mysql2/promise';
+import { consultar, ejecutar, pool } from '../config/db';
 import { Movimiento, OperacionDto, TransferenciaDto } from '../models/movimiento.model';
 import { HttpError, noEncontrado } from '../utils/http-error';
 
 // ejecuta varias consultas como una sola transaccion (todo o nada)
-export const ejecutarTransaccion = async <T>(accion: (client: PoolClient) => Promise<T>): Promise<T> => {
-  const client = await pool.connect();
+export const ejecutarTransaccion = async <T>(accion: (conexion: PoolConnection) => Promise<T>): Promise<T> => {
+  const conexion = await pool.getConnection();
   try {
-    await client.query('begin');
-    const resultado = await accion(client);
-    await client.query('commit');
+    await conexion.beginTransaction();
+    const resultado = await accion(conexion);
+    await conexion.commit();
     return resultado;
   } catch (error) {
-    await client.query('rollback');
+    await conexion.rollback();
     throw error;
   } finally {
-    client.release();
+    conexion.release();
   }
 };
 
 // bloquea la fila de la cuenta (evita operaciones simultaneas) y valida que exista y este activa
-export const bloquearCuentaActiva = async (client: PoolClient, idCuenta: number) => {
-  const { rows } = await client.query<{ id_cuenta: number; saldo: number; estado: string }>(
-    'select id_cuenta, saldo, estado from cuenta where id_cuenta = $1 for update',
-    [idCuenta]
+export const bloquearCuentaActiva = async (conexion: PoolConnection, idCuenta: number) => {
+  const filas = await consultar<{ id_cuenta: number; saldo: number; estado: string }>(
+    'select id_cuenta, saldo, estado from cuenta where id_cuenta = ? for update',
+    [idCuenta],
+    conexion
   );
-  if (!rows[0]) throw noEncontrado('Cuenta');
-  if (rows[0].estado !== 'activa') {
+  if (!filas[0]) throw noEncontrado('Cuenta');
+  if (filas[0].estado !== 'activa') {
     throw new HttpError(409, 'La cuenta está inactiva y no puede realizar operaciones', 'CUENTA_INACTIVA');
   }
-  return rows[0];
+  return filas[0];
+};
+
+const saldoDe = async (conexion: PoolConnection, idCuenta: number): Promise<number> => {
+  const filas = await consultar<{ saldo: number }>('select saldo from cuenta where id_cuenta = ?', [idCuenta], conexion);
+  return filas[0].saldo;
 };
 
 export const registrarMovimiento = async (
-  client: PoolClient,
+  conexion: PoolConnection,
   tipo: Movimiento['tipo'],
   dto: OperacionDto,
   idUsuario: number | null,
   idCuentaDestino: number | null = null
 ): Promise<Movimiento> => {
-  const { rows } = await client.query<Movimiento>(
+  const resultado = await ejecutar(
     `insert into movimiento (tipo, monto, descripcion, id_cuenta, id_cuenta_destino, id_usuario)
-     values ($1, $2, $3, $4, $5, $6)
-     returning *`,
-    [tipo, dto.monto, dto.descripcion ?? null, dto.id_cuenta, idCuentaDestino, idUsuario]
+     values (?, ?, ?, ?, ?, ?)`,
+    [tipo, dto.monto, dto.descripcion ?? null, dto.id_cuenta, idCuentaDestino, idUsuario],
+    conexion
   );
-  return rows[0];
+  const filas = await consultar<Movimiento>(
+    'select * from movimiento where id_movimiento = ?',
+    [resultado.insertId],
+    conexion
+  );
+  return filas[0];
 };
 
 export const depositar = (dto: OperacionDto, idUsuario: number | null) =>
-  ejecutarTransaccion(async (client) => {
-    await bloquearCuentaActiva(client, dto.id_cuenta);
-    const { rows } = await client.query<{ saldo: number }>(
-      'update cuenta set saldo = saldo + $1 where id_cuenta = $2 returning saldo',
-      [dto.monto, dto.id_cuenta]
-    );
-    const movimiento = await registrarMovimiento(client, 'deposito', dto, idUsuario);
-    return { movimiento, saldo_actual: rows[0].saldo };
+  ejecutarTransaccion(async (conexion) => {
+    await bloquearCuentaActiva(conexion, dto.id_cuenta);
+    await ejecutar('update cuenta set saldo = saldo + ? where id_cuenta = ?', [dto.monto, dto.id_cuenta], conexion);
+    const movimiento = await registrarMovimiento(conexion, 'deposito', dto, idUsuario);
+    return { movimiento, saldo_actual: await saldoDe(conexion, dto.id_cuenta) };
   });
 
 export const retirar = (dto: OperacionDto, idUsuario: number | null) =>
-  ejecutarTransaccion(async (client) => {
-    const cuenta = await bloquearCuentaActiva(client, dto.id_cuenta);
+  ejecutarTransaccion(async (conexion) => {
+    const cuenta = await bloquearCuentaActiva(conexion, dto.id_cuenta);
     if (dto.monto > cuenta.saldo) {
       throw new HttpError(422, 'Saldo insuficiente para realizar el retiro', 'SALDO_INSUFICIENTE');
     }
-    const { rows } = await client.query<{ saldo: number }>(
-      'update cuenta set saldo = saldo - $1 where id_cuenta = $2 returning saldo',
-      [dto.monto, dto.id_cuenta]
-    );
-    const movimiento = await registrarMovimiento(client, 'retiro', dto, idUsuario);
-    return { movimiento, saldo_actual: rows[0].saldo };
+    await ejecutar('update cuenta set saldo = saldo - ? where id_cuenta = ?', [dto.monto, dto.id_cuenta], conexion);
+    const movimiento = await registrarMovimiento(conexion, 'retiro', dto, idUsuario);
+    return { movimiento, saldo_actual: await saldoDe(conexion, dto.id_cuenta) };
   });
 
 export const transferir = (dto: TransferenciaDto, idUsuario: number | null) =>
-  ejecutarTransaccion(async (client) => {
+  ejecutarTransaccion(async (conexion) => {
     // regla 7: no se puede transferir hacia la misma cuenta
     if (dto.id_cuenta_origen === dto.id_cuenta_destino) {
       throw new HttpError(400, 'No se puede transferir hacia la misma cuenta', 'MISMA_CUENTA');
     }
     // se bloquean en orden de id para evitar interbloqueos entre transferencias cruzadas
     const [menor, mayor] = [dto.id_cuenta_origen, dto.id_cuenta_destino].sort((a, b) => a - b);
-    const primera = await bloquearCuentaActiva(client, menor);
-    const segunda = await bloquearCuentaActiva(client, mayor);
+    const primera = await bloquearCuentaActiva(conexion, menor);
+    const segunda = await bloquearCuentaActiva(conexion, mayor);
     const origen = primera.id_cuenta === dto.id_cuenta_origen ? primera : segunda;
 
     // regla 6: la cuenta origen debe tener saldo suficiente
     if (dto.monto > origen.saldo) {
       throw new HttpError(422, 'Saldo insuficiente en la cuenta origen', 'SALDO_INSUFICIENTE');
     }
-    await client.query('update cuenta set saldo = saldo - $1 where id_cuenta = $2', [dto.monto, dto.id_cuenta_origen]);
-    await client.query('update cuenta set saldo = saldo + $1 where id_cuenta = $2', [dto.monto, dto.id_cuenta_destino]);
+    await ejecutar('update cuenta set saldo = saldo - ? where id_cuenta = ?', [dto.monto, dto.id_cuenta_origen], conexion);
+    await ejecutar('update cuenta set saldo = saldo + ? where id_cuenta = ?', [dto.monto, dto.id_cuenta_destino], conexion);
 
     const movimiento = await registrarMovimiento(
-      client,
+      conexion,
       'transferencia',
       { id_cuenta: dto.id_cuenta_origen, monto: dto.monto, descripcion: dto.descripcion },
       idUsuario,
       dto.id_cuenta_destino
     );
-    const { rows } = await client.query(
+    const resultado = await ejecutar(
       `insert into transferencia (id_cuenta_origen, id_cuenta_destino, monto, id_movimiento)
-       values ($1, $2, $3, $4) returning *`,
-      [dto.id_cuenta_origen, dto.id_cuenta_destino, dto.monto, movimiento.id_movimiento]
+       values (?, ?, ?, ?)`,
+      [dto.id_cuenta_origen, dto.id_cuenta_destino, dto.monto, movimiento.id_movimiento],
+      conexion
     );
-    const { rows: saldos } = await client.query<{ id_cuenta: number; saldo: number }>(
-      'select id_cuenta, saldo from cuenta where id_cuenta in ($1, $2)',
-      [dto.id_cuenta_origen, dto.id_cuenta_destino]
-    );
+    const transferencia = (
+      await consultar('select * from transferencia where id_transferencia = ?', [resultado.insertId], conexion)
+    )[0];
     return {
       movimiento,
-      transferencia: rows[0],
-      saldo_origen: saldos.find((c) => c.id_cuenta === dto.id_cuenta_origen)?.saldo,
-      saldo_destino: saldos.find((c) => c.id_cuenta === dto.id_cuenta_destino)?.saldo,
+      transferencia,
+      saldo_origen: await saldoDe(conexion, dto.id_cuenta_origen),
+      saldo_destino: await saldoDe(conexion, dto.id_cuenta_destino),
     };
   });
