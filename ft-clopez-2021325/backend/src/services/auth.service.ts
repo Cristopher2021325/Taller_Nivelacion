@@ -1,17 +1,17 @@
 import bcrypt from 'bcryptjs';
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { pool } from '../config/db';
+import { consultar } from '../config/db';
 import { env } from '../config/env';
 import { Usuario, UsuarioToken } from '../models/usuario.model';
 import { HttpError } from '../utils/http-error';
 
 export const login = async (username: string, password: string) => {
-  const { rows } = await pool.query<Usuario>(
-    'select id_usuario, nombre, username, password, rol from usuario where username = $1',
+  const filas = await consultar<Usuario>(
+    'select id_usuario, nombre, username, password, rol from usuario where username = ?',
     [username]
   );
 
-  const usuario = rows[0];
+  const usuario = filas[0];
   const passwordValido = usuario ? await bcrypt.compare(password, usuario.password) : false;
 
   if (!usuario || !passwordValido) {
