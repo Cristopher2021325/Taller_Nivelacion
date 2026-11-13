@@ -1,44 +1,39 @@
-import { pool } from '../config/db';
+import { consultar, ejecutar } from '../config/db';
 import { Sucursal } from '../models/sucursal.model';
 import { noEncontrado } from '../utils/http-error';
 
-export const obtenerTodos = async (): Promise<Sucursal[]> => {
-  const { rows } = await pool.query<Sucursal>(
-    'select id_sucursal, nombre, direccion, telefono from sucursal order by id_sucursal'
-  );
-  return rows;
-};
+const columnas = 'id_sucursal, nombre, direccion, telefono';
+
+export const obtenerTodos = async (): Promise<Sucursal[]> =>
+  consultar<Sucursal>(`select ${columnas} from sucursal order by id_sucursal`);
 
 export const obtenerPorId = async (id: number): Promise<Sucursal> => {
-  const { rows } = await pool.query<Sucursal>(
-    'select id_sucursal, nombre, direccion, telefono from sucursal where id_sucursal = $1',
-    [id]
-  );
-  if (!rows[0]) throw noEncontrado('Sucursal');
-  return rows[0];
+  const filas = await consultar<Sucursal>(`select ${columnas} from sucursal where id_sucursal = ?`, [id]);
+  if (!filas[0]) throw noEncontrado('Sucursal');
+  return filas[0];
 };
 
 export const crear = async (s: Sucursal): Promise<Sucursal> => {
-  const { rows } = await pool.query<Sucursal>(
-    'insert into sucursal (nombre, direccion, telefono) values ($1, $2, $3) returning *',
-    [s.nombre, s.direccion, s.telefono]
-  );
-  return rows[0];
+  const resultado = await ejecutar('insert into sucursal (nombre, direccion, telefono) values (?, ?, ?)', [
+    s.nombre,
+    s.direccion,
+    s.telefono,
+  ]);
+  return obtenerPorId(resultado.insertId);
 };
 
 export const actualizar = async (id: number, s: Sucursal): Promise<Sucursal> => {
-  const { rows } = await pool.query<Sucursal>(
-    `update sucursal
-        set nombre = $1, direccion = $2, telefono = $3
-      where id_sucursal = $4
-      returning *`,
-    [s.nombre, s.direccion, s.telefono, id]
-  );
-  if (!rows[0]) throw noEncontrado('Sucursal');
-  return rows[0];
+  await obtenerPorId(id);
+  await ejecutar('update sucursal set nombre = ?, direccion = ?, telefono = ? where id_sucursal = ?', [
+    s.nombre,
+    s.direccion,
+    s.telefono,
+    id,
+  ]);
+  return obtenerPorId(id);
 };
 
 export const eliminar = async (id: number): Promise<void> => {
-  const { rowCount } = await pool.query('delete from sucursal where id_sucursal = $1', [id]);
-  if (!rowCount) throw noEncontrado('Sucursal');
+  const resultado = await ejecutar('delete from sucursal where id_sucursal = ?', [id]);
+  if (!resultado.affectedRows) throw noEncontrado('Sucursal');
 };
