@@ -1,7 +1,6 @@
 import { Component, input } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 
-// muestra el mensaje de validacion de un campo del formulario
 @Component({
   selector: 'app-error-campo',
   template: `
