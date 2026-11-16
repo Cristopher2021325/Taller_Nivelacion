@@ -1,0 +1,41 @@
+<nav class="navbar navbar-expand-lg navbar-dark barra">
+  <div class="container-fluid px-lg-4">
+    <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/inicio">
+      <span class="logo"><i class="bi bi-bank2"></i></span>
+      <span class="fw-semibold">Sistema Bancario</span>
+    </a>
+
+    <button class="navbar-toggler" type="button" (click)="menuAbierto = !menuAbierto" aria-label="Abrir menú">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" [class.show]="menuAbierto">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        @for (op of opciones; track op.ruta) {
+          @if (!op.admin || auth.esAdmin()) {
+          <li class="nav-item">
+            <a class="nav-link" [routerLink]="op.ruta" routerLinkActive="active" (click)="menuAbierto = false">
+              <i class="bi {{ op.icono }} me-1"></i>{{ op.texto }}
+            </a>
+          </li>
+          }
+        }
+      </ul>
+
+      @if (auth.usuario(); as u) {
+        <div class="d-flex align-items-center gap-3 text-white">
+          <div class="text-end lh-sm">
+            <div class="small fw-semibold">{{ u.nombre }}</div>
+            <span class="badge" [class.bg-warning]="u.rol === 'admin'" [class.text-dark]="u.rol === 'admin'"
+              [class.bg-info]="u.rol === 'usuario'">
+              {{ u.rol === 'admin' ? 'Administrador' : 'Usuario' }}
+            </span>
+          </div>
+          <button class="btn btn-outline-light btn-sm" (click)="cerrarSesion()">
+            <i class="bi bi-box-arrow-right me-1"></i>Cerrar sesión
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</nav>
