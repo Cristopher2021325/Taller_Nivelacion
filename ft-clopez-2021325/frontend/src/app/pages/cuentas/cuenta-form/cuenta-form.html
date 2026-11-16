@@ -1,0 +1,89 @@
+<div class="encabezado">
+  <div>
+    <h2><i class="bi bi-credit-card me-2"></i>{{ esEdicion() ? 'Editar cuenta' : 'Nueva cuenta' }}</h2>
+    <p>Los campos marcados con <span class="text-danger">*</span> son obligatorios</p>
+  </div>
+  <a routerLink="/cuentas" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Regresar</a>
+</div>
+
+<div class="tarjeta p-4">
+  @if (errorServidor()) {
+    <div class="alert alert-danger">
+      <i class="bi bi-x-circle me-1"></i>{{ errorServidor() }}
+      @if (erroresCampos().length) {
+        <ul class="mb-0 mt-1">
+          @for (e of erroresCampos(); track e.campo) { <li>{{ e.mensaje }}</li> }
+        </ul>
+      }
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label for="numero_cuenta" class="form-label obligatorio">Número de cuenta</label>
+        <input id="numero_cuenta" type="text" class="form-control" formControlName="numero_cuenta" maxlength="12"
+          placeholder="0000-0000-00" [class.is-invalid]="invalido('numero_cuenta')">
+        <app-error-campo [control]="form.controls.numero_cuenta" etiqueta="El número de cuenta"
+          mensajePatron="El número de cuenta debe tener el formato 0000-0000-00." />
+      </div>
+
+      <div class="col-md-4">
+        <label for="saldo" class="form-label obligatorio">Saldo (Q)</label>
+        <input id="saldo" type="number" min="0" step="0.01" class="form-control" formControlName="saldo"
+          placeholder="0.00" [class.is-invalid]="invalido('saldo')">
+        <app-error-campo [control]="form.controls.saldo" etiqueta="El saldo" />
+      </div>
+
+      <div class="col-md-4">
+        <label for="fecha_apertura" class="form-label obligatorio">Fecha de apertura</label>
+        <input id="fecha_apertura" type="date" class="form-control" formControlName="fecha_apertura" [max]="hoy"
+          [class.is-invalid]="invalido('fecha_apertura')">
+        <app-error-campo [control]="form.controls.fecha_apertura" etiqueta="La fecha de apertura" />
+      </div>
+
+      <div class="col-md-4">
+        <label for="id_cliente" class="form-label obligatorio">Cliente</label>
+        <select id="id_cliente" class="form-select" formControlName="id_cliente" [class.is-invalid]="invalido('id_cliente')">
+          <option [ngValue]="null" disabled>Seleccione un cliente</option>
+          @for (c of clientes(); track c.id_cliente) {
+            <option [ngValue]="c.id_cliente">{{ c.nombre }} {{ c.apellido }} — {{ c.dpi }}</option>
+          }
+        </select>
+        <app-error-campo [control]="form.controls.id_cliente" etiqueta="El cliente" />
+      </div>
+
+      <div class="col-md-4">
+        <label for="id_tipo" class="form-label obligatorio">Tipo de cuenta</label>
+        <select id="id_tipo" class="form-select" formControlName="id_tipo" [class.is-invalid]="invalido('id_tipo')">
+          <option [ngValue]="null" disabled>Seleccione un tipo</option>
+          @for (t of tipos(); track t.id_tipo) {
+            <option [ngValue]="t.id_tipo">{{ t.nombre }}</option>
+          }
+        </select>
+        <app-error-campo [control]="form.controls.id_tipo" etiqueta="El tipo de cuenta" />
+      </div>
+
+      <div class="col-md-4">
+        <label for="id_sucursal" class="form-label obligatorio">Sucursal</label>
+        <select id="id_sucursal" class="form-select" formControlName="id_sucursal" [class.is-invalid]="invalido('id_sucursal')">
+          <option [ngValue]="null" disabled>Seleccione una sucursal</option>
+          @for (s of sucursales(); track s.id_sucursal) {
+            <option [ngValue]="s.id_sucursal">{{ s.nombre }}</option>
+          }
+        </select>
+        <app-error-campo [control]="form.controls.id_sucursal" etiqueta="La sucursal" />
+      </div>
+    </div>
+
+    <hr class="my-4">
+
+    <div class="d-flex justify-content-end gap-2">
+      <a routerLink="/cuentas" class="btn btn-outline-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+        @if (guardando()) { <span class="spinner-border spinner-border-sm me-1"></span> } @else { <i class="bi bi-save me-1"></i> }
+        {{ esEdicion() ? 'Actualizar' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+</div>
