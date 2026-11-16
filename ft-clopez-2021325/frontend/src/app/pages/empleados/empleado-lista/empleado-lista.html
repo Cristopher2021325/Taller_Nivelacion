@@ -1,0 +1,63 @@
+<div class="encabezado">
+  <div>
+    <h2><i class="bi bi-person-badge me-2"></i>Empleados</h2>
+    <p>Personal del banco y la sucursal donde trabaja</p>
+  </div>
+  @if (auth.esAdmin()) {
+    <a routerLink="/empleados/nuevo" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nuevo empleado</a>
+  }
+</div>
+
+<div class="tarjeta p-3 p-md-4">
+  <div class="row g-2 mb-3">
+    <div class="col-md-6">
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="search" class="form-control" placeholder="Buscar por nombre, puesto o sucursal"
+          [ngModel]="filtro()" (ngModelChange)="filtro.set($event)">
+      </div>
+    </div>
+    <div class="col-md-6 text-md-end align-self-center text-muted small">
+      {{ filtrados().length }} de {{ empleados().length }} registros
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover tabla mb-0">
+      <thead>
+        <tr><th>#</th><th>Nombre</th><th>Apellido</th><th>Puesto</th><th>Teléfono</th><th>Sucursal</th><th class="text-center">Acciones</th></tr>
+      </thead>
+      <tbody>
+        @if (cargando()) {
+          <tr><td colspan="7" class="text-center py-4"><span class="spinner-border spinner-border-sm me-2"></span>Cargando...</td></tr>
+        } @else {
+          @for (e of filtrados(); track e.id_empleado) {
+            <tr>
+              <td>{{ e.id_empleado }}</td>
+              <td>{{ e.nombre }}</td>
+              <td>{{ e.apellido }}</td>
+              <td><span class="badge text-bg-light border">{{ e.puesto }}</span></td>
+              <td>{{ e.telefono }}</td>
+              <td>{{ e.sucursal }}</td>
+              <td class="text-center acciones">
+                <a class="btn btn-sm btn-outline-secondary me-1" [routerLink]="['/empleados', e.id_empleado]" title="Consultar">
+                  <i class="bi bi-eye"></i>
+                </a>
+                @if (auth.esAdmin()) {
+                  <a class="btn btn-sm btn-outline-primary me-1" [routerLink]="['/empleados', e.id_empleado, 'editar']" title="Editar">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <button class="btn btn-sm btn-outline-danger" (click)="eliminar(e)" title="Eliminar">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="7" class="text-center text-muted py-4">No se encontraron empleados.</td></tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
