@@ -1,0 +1,52 @@
+<div class="encabezado">
+  <div>
+    <h2><i class="bi bi-person-vcard me-2"></i>Detalle de cliente</h2>
+    <p>Información del cliente y sus cuentas</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a routerLink="/clientes" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Regresar</a>
+    @if (auth.esAdmin() && cliente()) {
+      <a [routerLink]="['/clientes', cliente()!.id_cliente, 'editar']" class="btn btn-primary"><i class="bi bi-pencil me-1"></i>Editar</a>
+      <button class="btn btn-danger" (click)="eliminar()"><i class="bi bi-trash me-1"></i>Eliminar</button>
+    }
+  </div>
+</div>
+
+@if (cliente(); as c) {
+  <div class="tarjeta p-4 mb-3">
+    <div class="row g-4">
+      <div class="col-sm-6 col-lg-3"><div class="dato-etiqueta">Código</div><div class="dato-valor">{{ c.id_cliente }}</div></div>
+      <div class="col-sm-6 col-lg-3"><div class="dato-etiqueta">Nombre completo</div><div class="dato-valor">{{ c.nombre }} {{ c.apellido }}</div></div>
+      <div class="col-sm-6 col-lg-3"><div class="dato-etiqueta">DPI</div><div class="dato-valor">{{ c.dpi }}</div></div>
+      <div class="col-sm-6 col-lg-3"><div class="dato-etiqueta">Teléfono</div><div class="dato-valor">{{ c.telefono }}</div></div>
+      <div class="col-sm-6 col-lg-6"><div class="dato-etiqueta">Correo</div><div class="dato-valor">{{ c.correo }}</div></div>
+      <div class="col-sm-6 col-lg-3"><div class="dato-etiqueta">Cuentas</div><div class="dato-valor">{{ cuentas().length }}</div></div>
+      <div class="col-sm-6 col-lg-3"><div class="dato-etiqueta">Saldo total</div><div class="dato-valor saldo">{{ saldoTotal() | currency: 'GTQ' : 'Q ' }}</div></div>
+    </div>
+  </div>
+
+  <div class="tarjeta p-4">
+    <h5 class="mb-3">Cuentas del cliente</h5>
+    <div class="table-responsive">
+      <table class="table tabla table-hover mb-0">
+        <thead><tr><th>Número</th><th>Tipo</th><th>Sucursal</th><th>Apertura</th><th class="text-end">Saldo</th><th></th></tr></thead>
+        <tbody>
+          @for (cu of cuentas(); track cu.id_cuenta) {
+            <tr>
+              <td>{{ cu.numero_cuenta }}</td>
+              <td>{{ cu.tipo }}</td>
+              <td>{{ cu.sucursal }}</td>
+              <td>{{ cu.fecha_apertura | date: 'dd/MM/yyyy' }}</td>
+              <td class="text-end saldo">{{ cu.saldo | currency: 'GTQ' : 'Q ' }}</td>
+              <td class="text-end"><a [routerLink]="['/cuentas', cu.id_cuenta]" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a></td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="text-center text-muted py-3">El cliente no tiene cuentas registradas.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+} @else {
+  <div class="text-center py-5"><span class="spinner-border"></span></div>
+}
