@@ -1,0 +1,68 @@
+<div class="fondo-login">
+  <div class="panel shadow-lg">
+    <div class="lado-marca d-none d-md-flex">
+      <div>
+        <span class="logo-grande"><i class="bi bi-bank2"></i></span>
+        <h1>Sistema Bancario</h1>
+        <p>Administración de clientes, cuentas, sucursales y empleados.</p>
+      </div>
+      <ul class="list-unstyled small mb-0">
+        <li><i class="bi bi-shield-lock me-2"></i>Acceso protegido con JWT</li>
+        <li><i class="bi bi-person-gear me-2"></i>Permisos por rol</li>
+      </ul>
+    </div>
+
+    <div class="lado-form">
+      <h2 class="mb-1">Iniciar sesión</h2>
+      <p class="text-muted mb-4">Ingrese sus credenciales para continuar</p>
+
+      @if (error()) {
+        <div class="alert alert-danger d-flex align-items-center py-2" role="alert">
+          <i class="bi bi-x-circle me-2"></i>{{ error() }}
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="ingresar()" novalidate>
+        <div class="mb-3">
+          <label for="username" class="form-label">Usuario</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-person"></i></span>
+            <input id="username" type="text" class="form-control" formControlName="username"
+              placeholder="Nombre de usuario" autocomplete="username"
+              [class.is-invalid]="form.controls.username.invalid && form.controls.username.touched">
+          </div>
+          <app-error-campo [control]="form.controls.username" etiqueta="El usuario" />
+        </div>
+
+        <div class="mb-4">
+          <label for="password" class="form-label">Contraseña</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+            <input id="password" class="form-control" formControlName="password"
+              [type]="verPassword() ? 'text' : 'password'" placeholder="Contraseña" autocomplete="current-password"
+              [class.is-invalid]="form.controls.password.invalid && form.controls.password.touched">
+            <button class="btn btn-outline-secondary" type="button" (click)="verPassword.set(!verPassword())"
+              [attr.aria-label]="verPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+              <i class="bi" [class.bi-eye]="!verPassword()" [class.bi-eye-slash]="verPassword()"></i>
+            </button>
+          </div>
+          <app-error-campo [control]="form.controls.password" etiqueta="La contraseña" />
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2" [disabled]="cargando()">
+          @if (cargando()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>Validando...
+          } @else {
+            <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
+          }
+        </button>
+      </form>
+
+      <div class="credenciales mt-4">
+        <div class="fw-semibold mb-1">Usuarios de prueba</div>
+        <div><span class="badge bg-warning text-dark me-1">Administrador</span> admin / admin123</div>
+        <div><span class="badge bg-info me-1">Usuario</span> usuario / usuario123</div>
+      </div>
+    </div>
+  </div>
+</div>
