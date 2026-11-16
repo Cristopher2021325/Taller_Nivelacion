@@ -1,0 +1,30 @@
+<div class="encabezado">
+  <div>
+    <h2><i class="bi bi-person-badge me-2"></i>Detalle de empleado</h2>
+    <p>Información del empleado</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a routerLink="/empleados" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Regresar</a>
+    @if (auth.esAdmin() && empleado()) {
+      <a [routerLink]="['/empleados', empleado()!.id_empleado, 'editar']" class="btn btn-primary"><i class="bi bi-pencil me-1"></i>Editar</a>
+      <button class="btn btn-danger" (click)="eliminar()"><i class="bi bi-trash me-1"></i>Eliminar</button>
+    }
+  </div>
+</div>
+
+@if (empleado(); as e) {
+  <div class="tarjeta p-4">
+    <div class="row g-4">
+      <div class="col-sm-6 col-lg-2"><div class="dato-etiqueta">Código</div><div class="dato-valor">{{ e.id_empleado }}</div></div>
+      <div class="col-sm-6 col-lg-4"><div class="dato-etiqueta">Nombre completo</div><div class="dato-valor">{{ e.nombre }} {{ e.apellido }}</div></div>
+      <div class="col-sm-6 col-lg-3"><div class="dato-etiqueta">Puesto</div><div class="dato-valor">{{ e.puesto }}</div></div>
+      <div class="col-sm-6 col-lg-3"><div class="dato-etiqueta">Teléfono</div><div class="dato-valor">{{ e.telefono }}</div></div>
+      <div class="col-sm-6 col-lg-6">
+        <div class="dato-etiqueta">Sucursal donde trabaja</div>
+        <div class="dato-valor"><a [routerLink]="['/sucursales', e.id_sucursal]">{{ e.sucursal }}</a></div>
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="text-center py-5"><span class="spinner-border"></span></div>
+}
