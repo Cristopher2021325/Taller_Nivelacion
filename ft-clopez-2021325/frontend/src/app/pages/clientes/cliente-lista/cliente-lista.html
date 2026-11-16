@@ -1,0 +1,73 @@
+<div class="encabezado">
+  <div>
+    <h2><i class="bi bi-people me-2"></i>Clientes</h2>
+    <p>Listado de clientes registrados en el banco</p>
+  </div>
+  @if (auth.esAdmin()) {
+    <a routerLink="/clientes/nuevo" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nuevo cliente</a>
+  }
+</div>
+
+<div class="tarjeta p-3 p-md-4">
+  <div class="row g-2 mb-3">
+    <div class="col-md-6">
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="search" class="form-control" placeholder="Buscar por nombre, DPI, correo o teléfono"
+          [ngModel]="filtro()" (ngModelChange)="filtro.set($event)">
+      </div>
+    </div>
+    <div class="col-md-6 text-md-end align-self-center text-muted small">
+      {{ filtrados().length }} de {{ clientes().length }} registros
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover tabla mb-0">
+      <thead>
+        <tr>
+          <th>#</th><th>Nombre</th><th>Apellido</th><th>DPI</th><th>Teléfono</th><th>Correo</th><th>Estado</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando()) {
+          <tr><td colspan="8" class="text-center py-4"><span class="spinner-border spinner-border-sm me-2"></span>Cargando...</td></tr>
+        } @else {
+          @for (c of filtrados(); track c.id_cliente) {
+            <tr>
+              <td>{{ c.id_cliente }}</td>
+              <td>{{ c.nombre }}</td>
+              <td>{{ c.apellido }}</td>
+              <td>{{ c.dpi }}</td>
+              <td>{{ c.telefono }}</td>
+              <td>{{ c.correo }}</td>
+              <td><span class="badge" [class.text-bg-success]="c.estado !== 'inactivo'" [class.text-bg-secondary]="c.estado === 'inactivo'">{{ c.estado ?? 'activo' }}</span></td>
+              <td class="text-center acciones">
+                <a class="btn btn-sm btn-outline-secondary me-1" [routerLink]="['/clientes', c.id_cliente]" title="Consultar">
+                  <i class="bi bi-eye"></i>
+                </a>
+                @if (auth.esAdmin()) {
+                  <a class="btn btn-sm btn-outline-primary me-1" [routerLink]="['/clientes', c.id_cliente, 'editar']" title="Editar">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  @if (c.estado === 'inactivo') {
+                    <button class="btn btn-sm btn-outline-success" (click)="reactivar(c)" title="Reactivar">
+                      <i class="bi bi-arrow-counterclockwise"></i>
+                    </button>
+                  } @else {
+                    <button class="btn btn-sm btn-outline-danger" (click)="eliminar(c)" title="Desactivar">
+                      <i class="bi bi-person-dash"></i>
+                    </button>
+                  }
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="8" class="text-center text-muted py-4">No se encontraron clientes.</td></tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
