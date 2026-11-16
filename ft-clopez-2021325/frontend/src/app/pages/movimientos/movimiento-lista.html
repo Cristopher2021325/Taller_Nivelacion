@@ -1,0 +1,70 @@
+<div class="encabezado">
+  <div>
+    <h2><i class="bi bi-clock-history me-2"></i>Movimientos</h2>
+    <p>
+      Historial de depósitos, retiros y transferencias
+      @if (cuenta()) { <span class="badge text-bg-secondary ms-1">Cuenta #{{ cuenta() }}</span> }
+    </p>
+  </div>
+  @if (cuenta()) {
+    <a routerLink="/movimientos" class="btn btn-outline-secondary"><i class="bi bi-list me-1"></i>Ver todos</a>
+  }
+</div>
+
+<div class="tarjeta p-3 p-md-4">
+  <div class="row g-2 mb-3 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label small mb-1">Tipo</label>
+      <select class="form-select" [ngModel]="tipo()" (ngModelChange)="tipo.set($event)">
+        <option value="">Todos</option>
+        <option value="deposito">Depósitos</option>
+        <option value="retiro">Retiros</option>
+        <option value="transferencia">Transferencias</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small mb-1">Desde</label>
+      <input type="date" class="form-control" [ngModel]="desde()" (ngModelChange)="desde.set($event)">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small mb-1">Hasta</label>
+      <input type="date" class="form-control" [ngModel]="hasta()" (ngModelChange)="hasta.set($event)">
+    </div>
+    <div class="col-md-3 d-flex justify-content-between align-items-center">
+      <button class="btn btn-outline-secondary" (click)="limpiar()"><i class="bi bi-x-circle me-1"></i>Limpiar</button>
+      <span class="text-muted small text-end">{{ filtrados().length }} registros<br>
+        Total: <strong class="saldo">{{ total() | currency: 'GTQ' : 'Q ' }}</strong></span>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover tabla mb-0">
+      <thead>
+        <tr>
+          <th>#</th><th>Fecha</th><th>Tipo</th><th>Cuenta origen</th><th>Cuenta destino</th>
+          <th class="text-end">Monto</th><th>Descripción</th><th>Usuario</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando()) {
+          <tr><td colspan="8" class="text-center py-4"><span class="spinner-border spinner-border-sm me-2"></span>Cargando...</td></tr>
+        } @else {
+          @for (m of filtrados(); track m.id_movimiento) {
+            <tr>
+              <td>{{ m.id_movimiento }}</td>
+              <td>{{ m.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td><span class="badge" [class]="claseTipo(m.tipo)">{{ m.tipo }}</span></td>
+              <td class="fw-semibold">{{ m.cuenta_origen }}</td>
+              <td>{{ m.cuenta_destino ?? '—' }}</td>
+              <td class="text-end saldo">{{ m.monto | currency: 'GTQ' : 'Q ' }}</td>
+              <td>{{ m.descripcion ?? '' }}</td>
+              <td>{{ m.usuario ?? '' }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="8" class="text-center text-muted py-4">No se encontraron movimientos.</td></tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
