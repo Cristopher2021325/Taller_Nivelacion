@@ -1,0 +1,71 @@
+.fondo-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: radial-gradient(circle at top left, #2a5ea4 0%, var(--azul-oscuro) 60%);
+}
+
+.panel {
+  width: 100%;
+  max-width: 880px;
+  display: flex;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.lado-marca {
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2.5rem;
+  color: #fff;
+  background: linear-gradient(160deg, var(--azul) 0%, var(--azul-oscuro) 100%);
+}
+
+.lado-marca h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-top: 1rem;
+}
+
+.lado-marca p {
+  opacity: 0.85;
+}
+
+.lado-marca li {
+  margin-top: 0.5rem;
+  opacity: 0.9;
+}
+
+.logo-grande {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  background: var(--dorado);
+  color: var(--azul-oscuro);
+}
+
+.lado-form {
+  flex: 1;
+  padding: 2.5rem;
+}
+
+.lado-form h2 {
+  font-weight: 600;
+  color: var(--azul-oscuro);
+}
+
+.credenciales {
+  font-size: 0.85rem;
+  background: var(--fondo);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  line-height: 1.8;
+}
