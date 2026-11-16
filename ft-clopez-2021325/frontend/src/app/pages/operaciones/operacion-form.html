@@ -1,0 +1,90 @@
+<div class="encabezado">
+  <div>
+    <h2><i class="bi bi-cash-coin me-2"></i>Operaciones bancarias</h2>
+    <p>Registre depósitos, retiros y transferencias entre cuentas</p>
+  </div>
+</div>
+
+<ul class="nav nav-tabs mb-3">
+  @for (t of tabs; track t.tipo) {
+    <li class="nav-item">
+      <a class="nav-link" [class.active]="modo() === t.tipo" [routerLink]="['/operaciones', t.tipo]">
+        <i class="bi {{ t.icono }} me-1"></i>{{ t.texto }}
+      </a>
+    </li>
+  }
+</ul>
+
+<div class="tarjeta p-4">
+  @if (errorServidor()) {
+    <div class="alert alert-danger"><i class="bi bi-x-circle me-1"></i>{{ errorServidor() }}</div>
+  }
+  @if (resultado(); as r) {
+    <div class="alert alert-success">
+      <i class="bi bi-check-circle me-1"></i>Operación registrada (movimiento #{{ r.movimiento.id_movimiento }}).
+      @if (r.saldo_actual !== undefined) {
+        Nuevo saldo: <strong>{{ r.saldo_actual | currency: 'GTQ' : 'Q ' }}</strong>
+      } @else {
+        Saldo origen: <strong>{{ r.saldo_origen | currency: 'GTQ' : 'Q ' }}</strong> &middot;
+        Saldo destino: <strong>{{ r.saldo_destino | currency: 'GTQ' : 'Q ' }}</strong>
+      }
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label for="id_cuenta" class="form-label obligatorio">{{ modo() === 'transferencia' ? 'Cuenta origen' : 'Cuenta' }}</label>
+        <select id="id_cuenta" class="form-select" formControlName="id_cuenta" [class.is-invalid]="invalido('id_cuenta')">
+          <option [ngValue]="null" disabled>Seleccione una cuenta</option>
+          @for (c of cuentas(); track c.id_cuenta) {
+            <option [ngValue]="c.id_cuenta" [disabled]="c.estado === 'inactiva'">{{ etiqueta(c) }}</option>
+          }
+        </select>
+        <app-error-campo [control]="form.controls.id_cuenta" etiqueta="La cuenta" />
+        @if (saldoDe(form.value.id_cuenta) !== null) {
+          <div class="form-text">Saldo disponible: <strong class="saldo">{{ saldoDe(form.value.id_cuenta) | currency: 'GTQ' : 'Q ' }}</strong></div>
+        }
+      </div>
+
+      @if (modo() === 'transferencia') {
+        <div class="col-md-6">
+          <label for="id_cuenta_destino" class="form-label obligatorio">Cuenta destino</label>
+          <select id="id_cuenta_destino" class="form-select" formControlName="id_cuenta_destino"
+            [class.is-invalid]="invalido('id_cuenta_destino') || (form.hasError('mismaCuenta') && form.controls.id_cuenta_destino.touched)">
+            <option [ngValue]="null" disabled>Seleccione una cuenta</option>
+            @for (c of cuentas(); track c.id_cuenta) {
+              <option [ngValue]="c.id_cuenta" [disabled]="c.estado === 'inactiva'">{{ etiqueta(c) }}</option>
+            }
+          </select>
+          <app-error-campo [control]="form.controls.id_cuenta_destino" etiqueta="La cuenta destino" />
+          @if (form.hasError('mismaCuenta') && form.controls.id_cuenta_destino.touched) {
+            <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>No se puede transferir hacia la misma cuenta.</div>
+          }
+        </div>
+      }
+
+      <div class="col-md-4">
+        <label for="monto" class="form-label obligatorio">Monto (Q)</label>
+        <input id="monto" type="number" step="0.01" min="0.01" class="form-control" formControlName="monto"
+          placeholder="0.00" [class.is-invalid]="invalido('monto')">
+        <app-error-campo [control]="form.controls.monto" etiqueta="El monto"
+          mensajePatron="El monto debe ser mayor que cero y admite máximo 2 decimales." />
+      </div>
+
+      <div class="col-md-8">
+        <label for="descripcion" class="form-label">Descripción (opcional)</label>
+        <input id="descripcion" type="text" class="form-control" formControlName="descripcion" maxlength="150"
+          placeholder="Motivo de la operación" [class.is-invalid]="invalido('descripcion')">
+      </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+      <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+        @if (guardando()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+        Registrar {{ modo() === 'deposito' ? 'depósito' : modo() === 'retiro' ? 'retiro' : 'transferencia' }}
+      </button>
+      <a routerLink="/movimientos" class="btn btn-outline-secondary"><i class="bi bi-clock-history me-1"></i>Ver movimientos</a>
+    </div>
+  </form>
+</div>
