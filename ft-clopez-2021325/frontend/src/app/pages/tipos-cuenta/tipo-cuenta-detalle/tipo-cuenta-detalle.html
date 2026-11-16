@@ -1,0 +1,46 @@
+<div class="encabezado">
+  <div>
+    <h2><i class="bi bi-tags me-2"></i>Detalle de tipo de cuenta</h2>
+    <p>Información del tipo y cuentas asociadas</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a routerLink="/tipos-cuenta" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Regresar</a>
+    @if (auth.esAdmin() && tipo()) {
+      <a [routerLink]="['/tipos-cuenta', tipo()!.id_tipo, 'editar']" class="btn btn-primary"><i class="bi bi-pencil me-1"></i>Editar</a>
+      <button class="btn btn-danger" (click)="eliminar()"><i class="bi bi-trash me-1"></i>Eliminar</button>
+    }
+  </div>
+</div>
+
+@if (tipo(); as t) {
+  <div class="tarjeta p-4 mb-3">
+    <div class="row g-4">
+      <div class="col-sm-3"><div class="dato-etiqueta">Código</div><div class="dato-valor">{{ t.id_tipo }}</div></div>
+      <div class="col-sm-3"><div class="dato-etiqueta">Nombre</div><div class="dato-valor">{{ t.nombre }}</div></div>
+      <div class="col-sm-6"><div class="dato-etiqueta">Descripción</div><div class="dato-valor">{{ t.descripcion }}</div></div>
+    </div>
+  </div>
+
+  <div class="tarjeta p-4">
+    <h5 class="mb-3">Cuentas de este tipo ({{ cuentas().length }})</h5>
+    <div class="table-responsive">
+      <table class="table tabla table-hover mb-0">
+        <thead><tr><th>Número</th><th>Cliente</th><th>Sucursal</th><th class="text-end">Saldo</th></tr></thead>
+        <tbody>
+          @for (c of cuentas(); track c.id_cuenta) {
+            <tr>
+              <td><a [routerLink]="['/cuentas', c.id_cuenta]">{{ c.numero_cuenta }}</a></td>
+              <td>{{ c.cliente }}</td>
+              <td>{{ c.sucursal }}</td>
+              <td class="text-end saldo">{{ c.saldo | currency: 'GTQ' : 'Q ' }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="text-center text-muted py-3">No hay cuentas de este tipo.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+} @else {
+  <div class="text-center py-5"><span class="spinner-border"></span></div>
+}
