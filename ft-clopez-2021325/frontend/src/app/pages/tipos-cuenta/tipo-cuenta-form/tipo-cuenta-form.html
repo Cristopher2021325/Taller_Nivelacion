@@ -1,0 +1,51 @@
+<div class="encabezado">
+  <div>
+    <h2><i class="bi bi-tag me-2"></i>{{ esEdicion() ? 'Editar tipo de cuenta' : 'Nuevo tipo de cuenta' }}</h2>
+    <p>Los campos marcados con <span class="text-danger">*</span> son obligatorios</p>
+  </div>
+  <a routerLink="/tipos-cuenta" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Regresar</a>
+</div>
+
+<div class="tarjeta p-4">
+  @if (errorServidor()) {
+    <div class="alert alert-danger">
+      <i class="bi bi-x-circle me-1"></i>{{ errorServidor() }}
+      @if (erroresCampos().length) {
+        <ul class="mb-0 mt-1">
+          @for (e of erroresCampos(); track e.campo) { <li>{{ e.mensaje }}</li> }
+        </ul>
+      }
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+    <div class="row g-3">
+      <div class="col-md-5">
+        <label for="nombre" class="form-label obligatorio">Nombre</label>
+        <input id="nombre" type="text" class="form-control" formControlName="nombre" maxlength="50"
+          placeholder="Ej. Ahorro" [class.is-invalid]="invalido('nombre')">
+        <app-error-campo [control]="form.controls.nombre" etiqueta="El nombre" />
+      </div>
+
+      <div class="col-12">
+        <label for="descripcion" class="form-label obligatorio">Descripción</label>
+        <textarea id="descripcion" rows="3" class="form-control" formControlName="descripcion" maxlength="255"
+          placeholder="Describa las características del tipo de cuenta" [class.is-invalid]="invalido('descripcion')"></textarea>
+        <div class="d-flex justify-content-between">
+          <app-error-campo [control]="form.controls.descripcion" etiqueta="La descripción" />
+          <small class="text-muted ms-auto">{{ form.controls.descripcion.value.length }}/255</small>
+        </div>
+      </div>
+    </div>
+
+    <hr class="my-4">
+
+    <div class="d-flex justify-content-end gap-2">
+      <a routerLink="/tipos-cuenta" class="btn btn-outline-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+        @if (guardando()) { <span class="spinner-border spinner-border-sm me-1"></span> } @else { <i class="bi bi-save me-1"></i> }
+        {{ esEdicion() ? 'Actualizar' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+</div>
