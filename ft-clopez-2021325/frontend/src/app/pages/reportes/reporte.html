@@ -1,0 +1,46 @@
+<div class="encabezado">
+  <div>
+    <h2><i class="bi bi-bar-chart-line me-2"></i>Reporte de operaciones</h2>
+    <p>Resumen general del sistema</p>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-secondary" (click)="imprimir()"><i class="bi bi-printer me-1"></i>Imprimir</button>
+    <a routerLink="/movimientos" class="btn btn-outline-primary"><i class="bi bi-clock-history me-1"></i>Ver movimientos</a>
+  </div>
+</div>
+
+@if (cargando()) {
+  <div class="tarjeta p-4 text-center"><span class="spinner-border spinner-border-sm me-2"></span>Cargando...</div>
+} @else if (resumen(); as r) {
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-lg-3"><div class="tarjeta p-3"><div class="text-muted small">Clientes activos</div><div class="fs-3 fw-semibold">{{ r.totales.clientes_activos }}</div></div></div>
+    <div class="col-6 col-lg-3"><div class="tarjeta p-3"><div class="text-muted small">Cuentas activas</div><div class="fs-3 fw-semibold">{{ r.totales.cuentas_activas }}</div></div></div>
+    <div class="col-6 col-lg-3"><div class="tarjeta p-3"><div class="text-muted small">Saldo total</div><div class="fs-3 fw-semibold saldo">{{ r.totales.saldo_total | currency: 'GTQ' : 'Q ' }}</div></div></div>
+    <div class="col-6 col-lg-3"><div class="tarjeta p-3"><div class="text-muted small">Movimientos</div><div class="fs-3 fw-semibold">{{ r.totales.total_movimientos }}</div></div></div>
+  </div>
+
+  <div class="tarjeta p-3 p-md-4">
+    <h5 class="mb-3">Operaciones por tipo</h5>
+    <div class="table-responsive">
+      <table class="table tabla mb-0">
+        <thead>
+          <tr><th>Tipo</th><th class="text-end">Cantidad</th><th class="text-end">Monto total</th><th class="text-end">Promedio</th><th>Primera</th><th>Última</th></tr>
+        </thead>
+        <tbody>
+          @for (t of r.por_tipo; track t.tipo) {
+            <tr>
+              <td class="fw-semibold text-capitalize">{{ t.tipo }}</td>
+              <td class="text-end">{{ t.cantidad }}</td>
+              <td class="text-end saldo">{{ t.total_monto | currency: 'GTQ' : 'Q ' }}</td>
+              <td class="text-end">{{ t.promedio_monto | currency: 'GTQ' : 'Q ' }}</td>
+              <td>{{ t.primera_operacion | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ t.ultima_operacion | date: 'dd/MM/yyyy HH:mm' }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="text-center text-muted py-4">Aún no hay operaciones registradas.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
