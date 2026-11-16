@@ -1,0 +1,69 @@
+<div class="encabezado">
+  <div>
+    <h2><i class="bi bi-person-plus me-2"></i>{{ esEdicion() ? 'Editar cliente' : 'Nuevo cliente' }}</h2>
+    <p>Los campos marcados con <span class="text-danger">*</span> son obligatorios</p>
+  </div>
+  <a routerLink="/clientes" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Regresar</a>
+</div>
+
+<div class="tarjeta p-4">
+  @if (errorServidor()) {
+    <div class="alert alert-danger">
+      <i class="bi bi-x-circle me-1"></i>{{ errorServidor() }}
+      @if (erroresCampos().length) {
+        <ul class="mb-0 mt-1">
+          @for (e of erroresCampos(); track e.campo) { <li>{{ e.mensaje }}</li> }
+        </ul>
+      }
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label for="nombre" class="form-label obligatorio">Nombre</label>
+        <input id="nombre" type="text" class="form-control" formControlName="nombre" maxlength="50"
+          placeholder="Ej. Carlos" [class.is-invalid]="invalido('nombre')">
+        <app-error-campo [control]="form.controls.nombre" etiqueta="El nombre" mensajePatron="El nombre solo puede contener letras." />
+      </div>
+
+      <div class="col-md-6">
+        <label for="apellido" class="form-label obligatorio">Apellido</label>
+        <input id="apellido" type="text" class="form-control" formControlName="apellido" maxlength="50"
+          placeholder="Ej. López" [class.is-invalid]="invalido('apellido')">
+        <app-error-campo [control]="form.controls.apellido" etiqueta="El apellido" mensajePatron="El apellido solo puede contener letras." />
+      </div>
+
+      <div class="col-md-4">
+        <label for="dpi" class="form-label obligatorio">DPI</label>
+        <input id="dpi" type="text" inputmode="numeric" class="form-control" formControlName="dpi" maxlength="13"
+          placeholder="13 dígitos" [class.is-invalid]="invalido('dpi')">
+        <app-error-campo [control]="form.controls.dpi" etiqueta="El DPI" mensajePatron="El DPI debe tener exactamente 13 dígitos numéricos." />
+      </div>
+
+      <div class="col-md-4">
+        <label for="telefono" class="form-label obligatorio">Teléfono</label>
+        <input id="telefono" type="text" inputmode="numeric" class="form-control" formControlName="telefono" maxlength="8"
+          placeholder="8 dígitos" [class.is-invalid]="invalido('telefono')">
+        <app-error-campo [control]="form.controls.telefono" etiqueta="El teléfono" mensajePatron="El teléfono debe tener 8 dígitos numéricos." />
+      </div>
+
+      <div class="col-md-4">
+        <label for="correo" class="form-label obligatorio">Correo electrónico</label>
+        <input id="correo" type="email" class="form-control" formControlName="correo" maxlength="100"
+          placeholder="nombre@correo.com" [class.is-invalid]="invalido('correo')">
+        <app-error-campo [control]="form.controls.correo" etiqueta="El correo" />
+      </div>
+    </div>
+
+    <hr class="my-4">
+
+    <div class="d-flex justify-content-end gap-2">
+      <a routerLink="/clientes" class="btn btn-outline-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+        @if (guardando()) { <span class="spinner-border spinner-border-sm me-1"></span> } @else { <i class="bi bi-save me-1"></i> }
+        {{ esEdicion() ? 'Actualizar' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+</div>
