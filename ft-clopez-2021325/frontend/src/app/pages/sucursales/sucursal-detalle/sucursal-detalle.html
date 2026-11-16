@@ -1,0 +1,59 @@
+<div class="encabezado">
+  <div>
+    <h2><i class="bi bi-bank me-2"></i>Detalle de sucursal</h2>
+    <p>Información de la sucursal, su personal y las cuentas que administra</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a routerLink="/sucursales" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Regresar</a>
+    @if (auth.esAdmin() && sucursal()) {
+      <a [routerLink]="['/sucursales', sucursal()!.id_sucursal, 'editar']" class="btn btn-primary"><i class="bi bi-pencil me-1"></i>Editar</a>
+      <button class="btn btn-danger" (click)="eliminar()"><i class="bi bi-trash me-1"></i>Eliminar</button>
+    }
+  </div>
+</div>
+
+@if (sucursal(); as s) {
+  <div class="tarjeta p-4 mb-3">
+    <div class="row g-4">
+      <div class="col-sm-2"><div class="dato-etiqueta">Código</div><div class="dato-valor">{{ s.id_sucursal }}</div></div>
+      <div class="col-sm-4"><div class="dato-etiqueta">Nombre</div><div class="dato-valor">{{ s.nombre }}</div></div>
+      <div class="col-sm-4"><div class="dato-etiqueta">Dirección</div><div class="dato-valor">{{ s.direccion }}</div></div>
+      <div class="col-sm-2"><div class="dato-etiqueta">Teléfono</div><div class="dato-valor">{{ s.telefono }}</div></div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="tarjeta p-4 h-100">
+        <h5 class="mb-3">Empleados ({{ empleados().length }})</h5>
+        <ul class="list-group list-group-flush">
+          @for (e of empleados(); track e.id_empleado) {
+            <li class="list-group-item d-flex justify-content-between px-0">
+              <a [routerLink]="['/empleados', e.id_empleado]">{{ e.nombre }} {{ e.apellido }}</a>
+              <span class="text-muted">{{ e.puesto }}</span>
+            </li>
+          } @empty {
+            <li class="list-group-item text-muted px-0">No hay empleados asignados.</li>
+          }
+        </ul>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="tarjeta p-4 h-100">
+        <h5 class="mb-3">Cuentas administradas ({{ cuentas().length }})</h5>
+        <ul class="list-group list-group-flush">
+          @for (c of cuentas(); track c.id_cuenta) {
+            <li class="list-group-item d-flex justify-content-between px-0">
+              <span><a [routerLink]="['/cuentas', c.id_cuenta]">{{ c.numero_cuenta }}</a> <span class="text-muted small">· {{ c.cliente }}</span></span>
+              <span class="saldo">{{ c.saldo | currency: 'GTQ' : 'Q ' }}</span>
+            </li>
+          } @empty {
+            <li class="list-group-item text-muted px-0">No administra cuentas.</li>
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="text-center py-5"><span class="spinner-border"></span></div>
+}
