@@ -1,0 +1,60 @@
+<div class="encabezado">
+  <div>
+    <h2><i class="bi bi-tags me-2"></i>Tipos de cuenta</h2>
+    <p>Catálogo de tipos de cuenta disponibles</p>
+  </div>
+  @if (auth.esAdmin()) {
+    <a routerLink="/tipos-cuenta/nuevo" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nuevo tipo</a>
+  }
+</div>
+
+<div class="tarjeta p-3 p-md-4">
+  <div class="row g-2 mb-3">
+    <div class="col-md-6">
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="search" class="form-control" placeholder="Buscar por nombre o descripción"
+          [ngModel]="filtro()" (ngModelChange)="filtro.set($event)">
+      </div>
+    </div>
+    <div class="col-md-6 text-md-end align-self-center text-muted small">
+      {{ filtrados().length }} de {{ tipos().length }} registros
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover tabla mb-0">
+      <thead>
+        <tr><th>#</th><th>Nombre</th><th>Descripción</th><th class="text-center">Acciones</th></tr>
+      </thead>
+      <tbody>
+        @if (cargando()) {
+          <tr><td colspan="4" class="text-center py-4"><span class="spinner-border spinner-border-sm me-2"></span>Cargando...</td></tr>
+        } @else {
+          @for (t of filtrados(); track t.id_tipo) {
+            <tr>
+              <td>{{ t.id_tipo }}</td>
+              <td class="fw-semibold">{{ t.nombre }}</td>
+              <td>{{ t.descripcion }}</td>
+              <td class="text-center acciones">
+                <a class="btn btn-sm btn-outline-secondary me-1" [routerLink]="['/tipos-cuenta', t.id_tipo]" title="Consultar">
+                  <i class="bi bi-eye"></i>
+                </a>
+                @if (auth.esAdmin()) {
+                  <a class="btn btn-sm btn-outline-primary me-1" [routerLink]="['/tipos-cuenta', t.id_tipo, 'editar']" title="Editar">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <button class="btn btn-sm btn-outline-danger" (click)="eliminar(t)" title="Eliminar">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="text-center text-muted py-4">No se encontraron tipos de cuenta.</td></tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
