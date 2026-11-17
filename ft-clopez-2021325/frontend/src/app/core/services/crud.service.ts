@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../environments/environment';
 import { MensajeApi, RespuestaApi } from '../models/api.model';
 
 // servicio base con las operaciones get, get por id, post, put y delete
