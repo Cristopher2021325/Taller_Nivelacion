@@ -6,10 +6,10 @@ export const env = {
   port: Number(process.env.PORT) || 3000,
   db: {
     host: process.env.DB_HOST || 'localhost',
-    port: Number(process.env.DB_PORT) || 5432,
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'admin',
-    database: process.env.DB_NAME || 'sistema_bancario',
+    port: Number(process.env.DB_PORT) || 3306,
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'sistema_bancario_mysql',
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'clave_secreta_sistema_bancario_2026',
