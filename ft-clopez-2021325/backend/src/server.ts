@@ -5,9 +5,9 @@ import { env } from './config/env';
 const iniciar = async () => {
   try {
     await probarConexion();
-    console.log('Conexión a PostgreSQL establecida');
+    console.log('Conexión a MySQL establecida correctamente');
   } catch (error) {
-    console.error('No se pudo conectar a PostgreSQL:', (error as Error).message);
+    console.error('No se pudo conectar a MySQL:', (error as Error).message);
   }
 
   app.listen(env.port, () => {
