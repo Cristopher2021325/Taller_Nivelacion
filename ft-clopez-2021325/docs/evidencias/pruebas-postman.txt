@@ -1,0 +1,394 @@
+newman
+
+Sistema Bancario API
+
+❏ 1. Autenticación
+↳ Login credenciales incorrectas (401)
+  POST http://localhost:3000/api/auth/login [401 Unauthorized, 392B, 146ms]
+  ✓  Código de estado 401
+  ✓  Código CREDENCIALES_INVALIDAS
+
+↳ Login campos vacíos (400)
+  POST http://localhost:3000/api/auth/login [400 Bad Request, 515B, 6ms]
+  ✓  Código de estado 400
+
+↳ Login administrador
+  POST http://localhost:3000/api/auth/login [200 OK, 682B, 94ms]
+  ✓  Código de estado 200
+  ✓  Devuelve token JWT
+
+↳ Login usuario
+  POST http://localhost:3000/api/auth/login [200 OK, 687B, 89ms]
+  ✓  Código de estado 200
+
+↳ Perfil del usuario autenticado
+  GET http://localhost:3000/api/auth/perfil [200 OK, 395B, 10ms]
+  ✓  Código de estado 200
+  ✓  Rol admin
+
+❏ 2. Seguridad
+↳ Petición sin token (401)
+  GET http://localhost:3000/api/clientes [401 Unauthorized, 400B, 2ms]
+  ✓  Código de estado 401
+  ✓  Código TOKEN_REQUERIDO
+
+↳ Token inválido (401)
+  GET http://localhost:3000/api/clientes [401 Unauthorized, 381B, 3ms]
+  ✓  Código de estado 401
+  ✓  Código TOKEN_INVALIDO
+
+↳ Token expirado (401)
+  GET http://localhost:3000/api/clientes [401 Unauthorized, 400B, 7ms]
+  ✓  Código de estado 401
+  ✓  Código TOKEN_EXPIRADO
+
+↳ Usuario consulta: GET permitido (200)
+  GET http://localhost:3000/api/cuentas [200 OK, 1.43kB, 7ms]
+  ✓  Código de estado 200
+
+↳ Usuario consulta: POST denegado (403)
+  POST http://localhost:3000/api/sucursales [403 Forbidden, 393B, 3ms]
+  ✓  Código de estado 403
+  ✓  Código SIN_PERMISOS
+
+↳ Usuario consulta: DELETE denegado (403)
+  DELETE http://localhost:3000/api/clientes/1 [403 Forbidden, 393B, 3ms]
+  ✓  Código de estado 403
+
+❏ 3. Clientes
+↳ Listar clientes
+  GET http://localhost:3000/api/clientes [200 OK, 910B, 4ms]
+  ✓  Código de estado 200
+  ✓  Devuelve un arreglo
+
+↳ Registrar
+  POST http://localhost:3000/api/clientes [201 Created, 522B, 10ms]
+  ✓  Código de estado 201
+
+↳ Registrar con datos inválidos (400)
+  POST http://localhost:3000/api/clientes [400 Bad Request, 729B, 6ms]
+  ✓  Código de estado 400
+  ✓  Incluye errores de validación
+
+↳ Obtener por id
+  GET http://localhost:3000/api/clientes/5 [200 OK, 463B, 4ms]
+  ✓  Código de estado 200
+
+↳ Actualizar
+  PUT http://localhost:3000/api/clientes/5 [200 OK, 523B, 8ms]
+  ✓  Código de estado 200
+
+↳ Desactivar (borrado lógico)
+  DELETE http://localhost:3000/api/clientes/5 [200 OK, 348B, 7ms]
+  ✓  Código de estado 200
+
+↳ Obtener cliente desactivado (200)
+  GET http://localhost:3000/api/clientes/5 [200 OK, 470B, 3ms]
+  ✓  Código de estado 200
+  ✓  Cliente inactivo
+
+↳ Reactivar cliente (200)
+  PATCH http://localhost:3000/api/clientes/5/reactivar [200 OK, 522B, 8ms]
+  ✓  Código de estado 200
+  ✓  Cliente activo
+
+❏ 4. Tipos de cuenta
+↳ Listar tipos de cuenta
+  GET http://localhost:3000/api/tipos-cuenta [200 OK, 612B, 5ms]
+  ✓  Código de estado 200
+  ✓  Devuelve un arreglo
+
+↳ Registrar
+  POST http://localhost:3000/api/tipos-cuenta [201 Created, 459B, 13ms]
+  ✓  Código de estado 201
+
+↳ Registrar con datos inválidos (400)
+  POST http://localhost:3000/api/tipos-cuenta [400 Bad Request, 536B, 4ms]
+  ✓  Código de estado 400
+  ✓  Incluye errores de validación
+
+↳ Obtener por id
+  GET http://localhost:3000/api/tipos-cuenta/4 [200 OK, 392B, 3ms]
+  ✓  Código de estado 200
+
+↳ Actualizar
+  PUT http://localhost:3000/api/tipos-cuenta/4 [200 OK, 465B, 7ms]
+  ✓  Código de estado 200
+
+↳ Eliminar
+  DELETE http://localhost:3000/api/tipos-cuenta/4 [200 OK, 353B, 5ms]
+  ✓  Código de estado 200
+
+↳ Obtener eliminado (404)
+  GET http://localhost:3000/api/tipos-cuenta/4 [404 Not Found, 378B, 3ms]
+  ✓  Código de estado 404
+
+❏ 5. Sucursales
+↳ Listar sucursales
+  GET http://localhost:3000/api/sucursales [200 OK, 669B, 3ms]
+  ✓  Código de estado 200
+  ✓  Devuelve un arreglo
+
+↳ Registrar
+  POST http://localhost:3000/api/sucursales [201 Created, 482B, 7ms]
+  ✓  Código de estado 201
+
+↳ Registrar con datos inválidos (400)
+  POST http://localhost:3000/api/sucursales [400 Bad Request, 602B, 5ms]
+  ✓  Código de estado 400
+  ✓  Incluye errores de validación
+
+↳ Obtener por id
+  GET http://localhost:3000/api/sucursales/4 [200 OK, 422B, 3ms]
+  ✓  Código de estado 200
+
+↳ Actualizar
+  PUT http://localhost:3000/api/sucursales/4 [200 OK, 488B, 7ms]
+  ✓  Código de estado 200
+
+↳ Eliminar
+  DELETE http://localhost:3000/api/sucursales/4 [200 OK, 347B, 4ms]
+  ✓  Código de estado 200
+
+↳ Obtener eliminado (404)
+  GET http://localhost:3000/api/sucursales/4 [404 Not Found, 372B, 5ms]
+  ✓  Código de estado 404
+
+❏ 6. Empleados
+↳ Listar empleados
+  GET http://localhost:3000/api/empleados [200 OK, 878B, 6ms]
+  ✓  Código de estado 200
+  ✓  Devuelve un arreglo
+
+↳ Registrar
+  POST http://localhost:3000/api/empleados [201 Created, 502B, 10ms]
+  ✓  Código de estado 201
+
+↳ Registrar con datos inválidos (400)
+  POST http://localhost:3000/api/empleados [400 Bad Request, 648B, 3ms]
+  ✓  Código de estado 400
+  ✓  Incluye errores de validación
+
+↳ Obtener por id
+  GET http://localhost:3000/api/empleados/5 [200 OK, 442B, 2ms]
+  ✓  Código de estado 200
+
+↳ Actualizar
+  PUT http://localhost:3000/api/empleados/5 [200 OK, 512B, 6ms]
+  ✓  Código de estado 200
+
+↳ Eliminar
+  DELETE http://localhost:3000/api/empleados/5 [200 OK, 347B, 6ms]
+  ✓  Código de estado 200
+
+↳ Obtener eliminado (404)
+  GET http://localhost:3000/api/empleados/5 [404 Not Found, 372B, 3ms]
+  ✓  Código de estado 404
+
+❏ 7. Cuentas
+↳ Listar cuentas
+  GET http://localhost:3000/api/cuentas [200 OK, 1.43kB, 3ms]
+  ✓  Código de estado 200
+  ✓  Devuelve un arreglo
+
+↳ Registrar
+  POST http://localhost:3000/api/cuentas [201 Created, 584B, 8ms]
+  ✓  Código de estado 201
+
+↳ Registrar con datos inválidos (400)
+  POST http://localhost:3000/api/cuentas [400 Bad Request, 717B, 7ms]
+  ✓  Código de estado 400
+  ✓  Incluye errores de validación
+
+↳ Obtener por id
+  GET http://localhost:3000/api/cuentas/6 [200 OK, 525B, 6ms]
+  ✓  Código de estado 200
+
+↳ Actualizar
+  PUT http://localhost:3000/api/cuentas/6 [200 OK, 580B, 6ms]
+  ✓  Código de estado 200
+
+↳ Eliminar
+  DELETE http://localhost:3000/api/cuentas/6 [200 OK, 345B, 4ms]
+  ✓  Código de estado 200
+
+↳ Obtener eliminado (404)
+  GET http://localhost:3000/api/cuentas/6 [404 Not Found, 370B, 3ms]
+  ✓  Código de estado 404
+
+❏ 8. Integridad referencial
+↳ Eliminar sucursal con datos relacionados (409)
+  DELETE http://localhost:3000/api/sucursales/1 [409 Conflict, 418B, 4ms]
+  ✓  Código de estado 409
+  ✓  Código REGISTRO_RELACIONADO
+
+↳ Cuenta con cliente inexistente (400)
+  POST http://localhost:3000/api/cuentas [400 Bad Request, 429B, 6ms]
+  ✓  Código de estado 400
+
+↳ DPI duplicado (409)
+  POST http://localhost:3000/api/clientes [409 Conflict, 427B, 8ms]
+  ✓  Código de estado 409
+
+↳ Cuentas de un cliente
+  GET http://localhost:3000/api/clientes/1/cuentas [200 OK, 756B, 4ms]
+  ✓  Código de estado 200
+
+❏ 9. Operaciones bancarias
+↳ Preparar: saldo inicial cuenta 1
+  GET http://localhost:3000/api/cuentas/1 [200 OK, 529B, 4ms]
+  ✓  Código de estado 200
+
+↳ Preparar: saldo inicial cuenta 2
+  GET http://localhost:3000/api/cuentas/2 [200 OK, 525B, 4ms]
+  ✓  Código de estado 200
+
+↳ Depósito sin token (401)
+  POST http://localhost:3000/api/depositos [401 Unauthorized, 400B, 3ms]
+  ✓  Código de estado 401
+
+↳ Depósito con usuario de consulta (403)
+  POST http://localhost:3000/api/depositos [403 Forbidden, 393B, 3ms]
+  ✓  Código de estado 403
+
+↳ P005 Depósito válido (201)
+  POST http://localhost:3000/api/depositos [201 Created, 572B, 10ms]
+  ✓  Código de estado 201
+  ✓  Saldo incrementado en 500
+  ✓  Movimiento registrado como depósito
+
+↳ Depósito con monto 0 (400)
+  POST http://localhost:3000/api/depositos [400 Bad Request, 456B, 4ms]
+  ✓  Código de estado 400
+  ✓  Código VALIDACION
+
+↳ Depósito con monto negativo (400)
+  POST http://localhost:3000/api/depositos [400 Bad Request, 456B, 5ms]
+  ✓  Código de estado 400
+  ✓  Código VALIDACION
+
+↳ Depósito a cuenta inexistente (404)
+  POST http://localhost:3000/api/depositos [404 Not Found, 370B, 4ms]
+  ✓  Código de estado 404
+
+↳ P006 Retiro con saldo suficiente (201)
+  POST http://localhost:3000/api/retiros [201 Created, 567B, 8ms]
+  ✓  Código de estado 201
+  ✓  Saldo disminuido en 200
+
+↳ P007 Retiro superior al saldo (422)
+  POST http://localhost:3000/api/retiros [422 Unprocessable Entity, 405B, 4ms]
+  ✓  Código de estado 422
+  ✓  Código SALDO_INSUFICIENTE
+
+↳ Retiro con monto 0 (400)
+  POST http://localhost:3000/api/retiros [400 Bad Request, 456B, 8ms]
+  ✓  Código de estado 400
+  ✓  Código VALIDACION
+
+↳ P008 Transferencia válida (201)
+  POST http://localhost:3000/api/transferencias [201 Created, 754B, 11ms]
+  ✓  Código de estado 201
+  ✓  Origen disminuye 100
+  ✓  Destino aumenta 100
+  ✓  Se registra la transferencia
+
+↳ P009 Transferencia a la misma cuenta (400)
+  POST http://localhost:3000/api/transferencias [400 Bad Request, 480B, 2ms]
+  ✓  Código de estado 400
+  ✓  Código VALIDACION
+
+↳ Transferencia con saldo insuficiente (422)
+  POST http://localhost:3000/api/transferencias [422 Unprocessable Entity, 401B, 4ms]
+  ✓  Código de estado 422
+  ✓  Código SALDO_INSUFICIENTE
+
+↳ Transferencia a cuenta inexistente (404)
+  POST http://localhost:3000/api/transferencias [404 Not Found, 370B, 12ms]
+  ✓  Código de estado 404
+
+↳ P010 Crear cuenta temporal (201)
+  POST http://localhost:3000/api/cuentas [201 Created, 583B, 7ms]
+  ✓  Código de estado 201
+
+↳ P010 Inactivar cuenta temporal (200)
+  PUT http://localhost:3000/api/cuentas/8 [200 OK, 581B, 7ms]
+  ✓  Código de estado 200
+  ✓  Cuenta inactiva
+
+↳ P010 Depósito en cuenta inactiva (409)
+  POST http://localhost:3000/api/depositos [409 Conflict, 404B, 4ms]
+  ✓  Código de estado 409
+  ✓  Código CUENTA_INACTIVA
+
+↳ P010 Retiro en cuenta inactiva (409)
+  POST http://localhost:3000/api/retiros [409 Conflict, 404B, 3ms]
+  ✓  Código de estado 409
+  ✓  Código CUENTA_INACTIVA
+
+↳ P010 Transferencia desde cuenta inactiva (409)
+  POST http://localhost:3000/api/transferencias [409 Conflict, 404B, 4ms]
+  ✓  Código de estado 409
+  ✓  Código CUENTA_INACTIVA
+
+↳ P010 Eliminar cuenta temporal (200)
+  DELETE http://localhost:3000/api/cuentas/8 [200 OK, 345B, 2ms]
+  ✓  Código de estado 200
+
+↳ Historial de movimientos (200)
+  GET http://localhost:3000/api/movimientos [200 OK, 1kB, 3ms]
+  ✓  Código de estado 200
+  ✓  Devuelve un arreglo con movimientos
+
+↳ Movimientos filtrados por tipo (200)
+  GET http://localhost:3000/api/movimientos?tipo=deposito [200 OK, 529B, 12ms]
+  ✓  Código de estado 200
+  ✓  Solo depósitos
+
+↳ Movimientos de una cuenta (200)
+  GET http://localhost:3000/api/movimientos/cuenta/1 [200 OK, 1kB, 4ms]
+  ✓  Código de estado 200
+  ✓  Incluye operaciones de la cuenta
+
+↳ Movimientos de cuenta inexistente (404)
+  GET http://localhost:3000/api/movimientos/cuenta/99999 [404 Not Found, 370B, 2ms]
+  ✓  Código de estado 404
+
+↳ Movimientos con usuario de consulta (200)
+  GET http://localhost:3000/api/movimientos [200 OK, 1kB, 3ms]
+  ✓  Código de estado 200
+
+↳ Reporte resumen de operaciones (200)
+  GET http://localhost:3000/api/reportes/resumen [200 OK, 914B, 4ms]
+  ✓  Código de estado 200
+  ✓  Incluye totales y resumen por tipo
+
+↳ Buscar clientes por texto (200)
+  GET http://localhost:3000/api/clientes?q=maria [200 OK, 460B, 5ms]
+  ✓  Código de estado 200
+  ✓  Todos coinciden con la búsqueda
+
+↳ Buscar cuentas por texto (200)
+  GET http://localhost:3000/api/cuentas?q=1001-0001 [200 OK, 531B, 4ms]
+  ✓  Código de estado 200
+  ✓  Devuelve cuentas
+
+┌─────────────────────────┬──────────────────┬──────────────────┐
+│                         │         executed │           failed │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              iterations │                1 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│                requests │               80 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│            test-scripts │               80 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│      prerequest-scripts │                1 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              assertions │              122 │                0 │
+├─────────────────────────┴──────────────────┴──────────────────┤
+│ total run duration: 2.1s                                      │
+├───────────────────────────────────────────────────────────────┤
+│ total data received: 18.59kB (approx)                         │
+├───────────────────────────────────────────────────────────────┤
+│ average response time: 9ms [min: 2ms, max: 146ms, s.d.: 20ms] │
+└───────────────────────────────────────────────────────────────┘
