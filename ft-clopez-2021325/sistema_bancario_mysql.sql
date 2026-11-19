@@ -1,4 +1,3 @@
-
 drop database if exists sistema_bancario;
 create database sistema_bancario;
 use sistema_bancario;
